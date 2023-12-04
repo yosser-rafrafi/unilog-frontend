@@ -39,4 +39,18 @@ const users = {
     profile: () => api.get("/users/profile"),
 };
 
-export { api, users };
+const annonces = {
+    createAnnonces: async (formData: FormData) => {
+        try {
+          const response = await api.post("/annonces", formData);
+        } catch (error) {
+          console.error("Error creating annonces:", error.message);
+        }
+      },
+    getAnnoncesList: (search = null) =>
+        search ? api.get(`/annonces?search=${search}`)
+            : api.get("/annonces")
+    ,
+}
+
+export { api, users, annonces };

@@ -1,45 +1,56 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { useNavigate  } from 'react-router-dom';
+import { annonces } from "../../apis/api"
 import './Formulaire.scss'; // Assurez-vous de créer ce fichier CSS
 
-const Formulaire = ({ addFormData }) => {
-    const navigate = useNavigate();
+const Formulaire = ({cb, setcb}) => {
   const [formData, setFormData] = useState({
     location: '',
-    numberOfRooms: '',
-    rent: '',
-    date: '',
+    numberOfRooms: 0,
+    rent: 0,
     description: '',
-    photos: '',
-    availability: false,
+    availability: false
   });
+  const [files, setFiles] = useState([])
+  const formDataToSend = new FormData()
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    setFormData((prev) => ({
+      ...prev, [name]:value
+    }))
+  };
+  const handleFileChange = (e) => {
+    const filesPhotos = e.target.files;
+    setFiles(filesPhotos)
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    formDataToSend.append("location", formData.location);
+    formDataToSend.append("numberOfRooms", formData.numberOfRooms);
+    formDataToSend.append("rent", formData.rent);
+    formDataToSend.append("description", formData.description);
+    formDataToSend.append("availability", formData.availability);
+  
+    // Append each file individually to the 'photos' field
+    for (let i = 0; i < files.length; i++) {
+      formDataToSend.append("photos", files[i]);
+    }
+  
     try {
-      const response = await axios.post('http://localhost:4000/api/annonces', formData);
-      console.log('Data sent successfully:', response.data);
-      addFormData(response.data);
-      
-      navigate('/list-annonces');
-      // Vous pouvez rediriger l'utilisateur ou gérer le succès selon les besoins
+      await annonces.createAnnonces(formDataToSend);
+      setcb(!cb)
+      // location.reload();
     } catch (error) {
       console.error('Error sending data:', error.message);
-      // Gérer l'erreur, afficher un message à l'utilisateur, etc.
+      // Handle the error, display a message to the user, etc.
     }
   };
 
   return (
     <div className="form-container">
       <h2>Créer une nouvelle annonce</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} encType="multipart/form-data">
         <div className="form-group">
           <label>Location:</label>
           <input type="text" name="location" value={formData.location} onChange={handleInputChange} />
@@ -53,20 +64,16 @@ const Formulaire = ({ addFormData }) => {
           <input type="number" name="rent" value={formData.rent} onChange={handleInputChange} />
         </div>
         <div className="form-group">
-          <label>Date:</label>
-          <input type="date" name="date" value={formData.date} onChange={handleInputChange} />
-        </div>
-        <div className="form-group">
           <label>Description:</label>
           <textarea name="description" value={formData.description} onChange={handleInputChange} />
         </div>
         <div className="form-group">
-          <label>Photos (comma-separated URLs):</label>
-          <input type="text" name="photos" value={formData.photos} onChange={handleInputChange} />
+          <label>Photos:</label>
+          <input type="file" name="photos" onChange={handleFileChange} multiple />
         </div>
         <div className="form-group">
-          <label>Availability:</label>
-          <input type="checkbox" name="availability" checked={formData.availability} onChange={() => setFormData({ ...formData, availability: !formData.availability })} />
+          <label>Available:<input type="checkbox" name="availability" checked={formData.availability} onChange={() => setFormData({ ...formData, availability: !formData.availability })} />
+          </label>
         </div>
         <button type="submit">Enregistrer</button>
       </form>

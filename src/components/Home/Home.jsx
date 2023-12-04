@@ -3,11 +3,10 @@ import React from "react";
 import './Home.scss'
 
 import About from '../About/About'
-import Search from '../Search/Search';
-// import Ads from './components/Ads/Ads';
+import Advertissement from '../Advertissement/Advertissement';
 import Destinations from '../Destinations/Destinations';
 
-const Home = () => {
+const Home = ({connectedUser}) => {
     return (
     <>
     <div id="Home">
@@ -23,9 +22,8 @@ const Home = () => {
             </div>
         </div>
     </div>
-        <Search />
         <Destinations />
-        {/* <Ads /> */}
+        <Advertissement connectedUser={connectedUser}/>
         <About /></>
 
     )
